@@ -15,15 +15,17 @@ datasource db {
 }
 
 model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+    id        String   @id @default(cuid())
+    content   String
+    sessionId String
+    session   Session  @relation(fields: [sessionId], references: [id])
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+    @@index([sessionId])
+    @@index([userId])
 }
 
 // Necessary for Next auth
@@ -47,11 +49,17 @@ model Account {
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id          String   @id @default(cuid())
+    title       String
+    description String
+    model       String
+    userId      String
+    user        User     @relation(fields: [userId], references: [id])
+    posts       Post[]
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@index([userId])
 }
 
 model User {

@@ -1,12 +1,11 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { signIn } from "next-auth/react"
 
 export function GoogleLoginButton() {
   const handleGoogleLogin = async () => {
-    // Here you would implement your Google login logic
-    // This would typically redirect to a Google OAuth flow
-    console.log("Google login clicked")
+    await signIn("google", { callbackUrl: "/dashboard" })
   }
 
   return (
