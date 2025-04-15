@@ -12,6 +12,13 @@ export const sessionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.session.user.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
       return ctx.db.session.create({
         data: {
           title: input.title,
@@ -27,6 +34,12 @@ export const sessionRouter = createTRPCRouter({
       where: {
         userId: ctx.session.user.id,
       },
+      include: {
+        posts: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
     });
   }),
 
@@ -37,6 +50,9 @@ export const sessionRouter = createTRPCRouter({
         where: {
           id: input.id,
           userId: ctx.session.user.id,
+        },
+        include: {
+          posts: true,
         },
       });
 

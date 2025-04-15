@@ -1,37 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Zap } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Zap } from "lucide-react";
 
 interface AIModelSelectorProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function AIModelSelector({ onClose }: AIModelSelectorProps) {
-  const [selectedModel, setSelectedModel] = useState("gemini")
-  const [apiKey, setApiKey] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedModel, setSelectedModel] = useState("gemini");
+  const [apiKey, setApiKey] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = () => {
-    setIsGenerating(true)
+    setIsGenerating(true);
 
     // Simulate AI processing
     setTimeout(() => {
-      setIsGenerating(false)
+      setIsGenerating(false);
       // Here you would redirect to the generated blog
-      window.location.href = `/dashboard/generated/1`
-    }, 2000)
-  }
+      window.location.href = `/dashboard/generated/1`;
+    }, 2000);
+  };
 
-  const needsApiKey = selectedModel !== "gemini"
+  const needsApiKey = selectedModel !== "gemini";
 
   return (
     <div className="space-y-4">
-      <RadioGroup value={selectedModel} onValueChange={setSelectedModel} className="space-y-2">
+      <RadioGroup
+        value={selectedModel}
+        onValueChange={setSelectedModel}
+        className="space-y-2"
+      >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="gemini" id="gemini" />
           <Label htmlFor="gemini">Gemini (Default)</Label>
@@ -47,7 +51,7 @@ export function AIModelSelector({ onClose }: AIModelSelectorProps) {
       </RadioGroup>
 
       {needsApiKey && (
-        <div className="space-y-2 mt-4">
+        <div className="mt-4 space-y-2">
           <Label htmlFor="api-key">API Key</Label>
           <Input
             id="api-key"
@@ -57,15 +61,20 @@ export function AIModelSelector({ onClose }: AIModelSelectorProps) {
             onChange={(e) => setApiKey(e.target.value)}
             className="w-full"
           />
-          <p className="text-xs text-muted-foreground">
-            Your API key is required to use {selectedModel === "gpt" ? "ChatGPT" : "Claude"} and will not be stored on
-            our servers.
+          <p className="text-muted-foreground text-xs">
+            Your API key is required to use{" "}
+            {selectedModel === "gpt" ? "ChatGPT" : "Claude"} and will not be
+            stored on our servers.
           </p>
         </div>
       )}
 
-      <div className="flex gap-2 mt-4">
-        <Button onClick={handleGenerate} className="flex-1 gap-1" disabled={(needsApiKey && !apiKey) || isGenerating}>
+      <div className="mt-4 flex gap-2">
+        <Button
+          onClick={handleGenerate}
+          className="flex-1 gap-1"
+          disabled={(needsApiKey && !apiKey) || isGenerating}
+        >
           <Zap className="h-4 w-4" />
           {isGenerating ? "Generating..." : "Generate Blog"}
         </Button>
@@ -74,6 +83,5 @@ export function AIModelSelector({ onClose }: AIModelSelectorProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-
