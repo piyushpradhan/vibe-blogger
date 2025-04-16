@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Send, Zap } from "lucide-react";
+import { ArrowLeft, Send, Zap, MessageSquare, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MicroPost } from "@/components/micro-post";
 import { AIModelSelector } from "@/components/ai-model-selector";
@@ -74,45 +74,59 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="mx-auto max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6">
+      <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1400px] py-8">
+        <div className="mb-8">
           <Link
             href="/dashboard"
-            className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to sessions
           </Link>
-          <h1 className="text-2xl font-bold">{session.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {session.posts.length} posts in this session
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{session.title}</h1>
+              <p className="text-muted-foreground mt-2">
+                {session.posts.length} {session.posts.length === 1 ? 'thought' : 'thoughts'} captured
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <Card>
-              <CardContent className="p-4">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-8 lg:col-span-2">
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-6">
                 <Textarea
                   placeholder="What's on your mind? Add a new thought to this session..."
-                  className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0"
+                  className="min-h-[120px] resize-none border-0 p-0 focus-visible:ring-0 text-lg"
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
                 />
-                <div className="mt-2 flex justify-end">
-                  <Button onClick={handleAddPost} className="gap-1">
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    onClick={handleAddPost} 
+                    className="gap-1.5"
+                    disabled={!newPost.trim()}
+                  >
                     <Send className="h-4 w-4" />
-                    Post
+                    Post Thought
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {session.posts.length === 0 ? (
-                <p className="text-muted-foreground py-8 text-center">
-                  No posts yet. Add your first thought above!
-                </p>
+                <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-muted/30 rounded-lg">
+                  <div className="rounded-full bg-primary/10 p-4 mb-6">
+                    <MessageSquare className="h-8 w-8 text-primary" />
+                  </div>
+                  <h2 className="text-2xl font-semibold mb-2">Start Your Thought Journey</h2>
+                  <p className="text-muted-foreground max-w-md mb-6">
+                    Your first thought is just a click away. Share your ideas, insights, or questions above and watch your session come to life.
+                  </p>
+                </div>
               ) : (
                 session.posts.map((post) => (
                   <MicroPost key={post.id} post={post} />
@@ -122,11 +136,14 @@ export default function SessionPage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="space-y-6">
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="mb-2 font-medium">Generate Blog Post</h3>
-                <p className="text-muted-foreground mb-4 text-sm">
-                  Convert this session into a structured blog post using AI.
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">Generate Blog Post</h3>
+                </div>
+                <p className="text-muted-foreground mb-6 text-sm">
+                  Transform your thoughts into a polished blog post using AI. Select your preferred model and let the magic happen.
                 </p>
 
                 {showAIOptions ? (
@@ -134,11 +151,20 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 ) : (
                   <Button
                     onClick={handleGenerateBlog}
-                    className="w-full gap-1"
+                    className="w-full gap-1.5"
                     disabled={session.posts.length === 0 || isGenerating}
                   >
-                    <Zap className="h-4 w-4" />
-                    {isGenerating ? "Generating..." : "Generate Blog"}
+                    {isGenerating ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate Blog
+                      </>
+                    )}
                   </Button>
                 )}
 
