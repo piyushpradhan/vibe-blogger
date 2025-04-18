@@ -197,6 +197,11 @@ Thank you for using Vibe Blogger to generate your content.`;
     });
   };
 
+  const handleDeletePost = () => {
+    // Invalidate the session query to refresh the data
+    void utils.session.getById.invalidate({ id });
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -310,6 +315,8 @@ Thank you for using Vibe Blogger to generate your content.`;
                           <SortableMicroPost 
                             key={post.id} 
                             post={post}
+                            sessionId={session.id}
+                            onDelete={handleDeletePost}
                           />
                         ))}
                       </div>
