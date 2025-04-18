@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { use } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Send, Zap, MessageSquare, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Zap, MessageSquare, Sparkles, Pencil } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MicroPost } from "@/components/micro-post";
 import { SortableMicroPost } from "@/components/sortable-micro-post";
@@ -16,6 +16,13 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DraggablePostOverlay } from "@/components/draggable-post-overlay";
+import { useClickOutside } from "@/hooks/use-click-outside";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -23,6 +30,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [activePost, setActivePost] = useState<{ content: string } | null>(null);
+  const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const descriptionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
 
   const { data: session, isLoading } = api.session.getById.useQuery({ id });
   const addPostMutation = api.session.addPost.useMutation({
@@ -97,6 +108,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   });
 
   const utils = api.useUtils();
+  const updateSessionMutation = api.session.update.useMutation();
 
   const handleAddPost = () => {
     if (!newPost.trim() || !session) return;
@@ -202,6 +214,18 @@ Thank you for using Vibe Blogger to generate your content.`;
     void utils.session.getById.invalidate({ id });
   };
 
+  useClickOutside(titleInputRef as React.RefObject<HTMLElement>, () => {
+    if (titleInputRef.current) {
+      titleInputRef.current.blur();
+    }
+  });
+
+  useClickOutside(descriptionInputRef as React.RefObject<HTMLElement>, () => {
+    if (descriptionInputRef.current) {
+      descriptionInputRef.current.blur();
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -244,9 +268,80 @@ Thank you for using Vibe Blogger to generate your content.`;
             Back to sessions
           </Link>
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{session.title}</h1>
-              <p className="text-muted-foreground mt-2">
+            <div className="space-y-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-full">
+                      <input
+                        ref={titleInputRef}
+                        type="text"
+                        value={session.title}
+                        onChange={(e) => {
+                          utils.session.getById.setData({ id }, {
+                            ...session,
+                            title: e.target.value
+                          });
+                          // Debounce the update
+                          if (titleUpdateTimeoutRef.current) {
+                            clearTimeout(titleUpdateTimeoutRef.current);
+                          }
+                          titleUpdateTimeoutRef.current = setTimeout(() => {
+                            updateSessionMutation.mutate({
+                              id: session.id,
+                              title: e.target.value
+                            });
+                          }, 500);
+                        }}
+                        className="text-3xl font-bold tracking-tight bg-transparent border-none focus:outline-none focus:ring-0 p-0 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors w-full truncate"
+                        title={session.title}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{session.title}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-full">
+                      <textarea
+                        ref={descriptionInputRef}
+                        placeholder="Add a description..."
+                        value={session.description || ""}
+                        onChange={(e) => {
+                          utils.session.getById.setData({ id }, {
+                            ...session,
+                            description: e.target.value
+                          });
+                          // Debounce the update
+                          if (descriptionUpdateTimeoutRef.current) {
+                            clearTimeout(descriptionUpdateTimeoutRef.current);
+                          }
+                          descriptionUpdateTimeoutRef.current = setTimeout(() => {
+                            updateSessionMutation.mutate({
+                              id: session.id,
+                              description: e.target.value
+                            });
+                          }, 500);
+                        }}
+                        className="text-muted-foreground bg-transparent border-none focus:outline-none focus:ring-0 p-0 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors w-full max-w-xl resize-none overflow-hidden"
+                        rows={3}
+                        style={{
+                          maxHeight: "4.5em", // 3 lines * 1.5em line height
+                        }}
+                        title={session.description || ""}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{session.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <p className="text-muted-foreground text-sm">
                 {session.posts.length} {session.posts.length === 1 ? 'thought' : 'thoughts'} captured
               </p>
             </div>
@@ -310,7 +405,7 @@ Thank you for using Vibe Blogger to generate your content.`;
                       items={session.posts.map(post => post.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="gap-3">
+                      <div className="flex flex-col gap-3">
                         {session.posts.slice().reverse().map((post: { id: string; content: string; createdAt: Date; sessionId: string; userId: string; updatedAt: Date }) => (
                           <SortableMicroPost 
                             key={post.id} 

@@ -29,6 +29,41 @@ export const sessionRouter = createTRPCRouter({
       });
     }),
 
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // First verify the session belongs to the user
+      const session = await ctx.db.session.findUnique({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!session) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Session not found",
+        });
+      }
+
+      return ctx.db.session.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          title: input.title,
+          description: input.description,
+        },
+      });
+    }),
+
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.session.findMany({
       where: {

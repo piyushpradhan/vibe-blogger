@@ -56,8 +56,8 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 min-w-[320px] sm:min-w-[640px] md:min-w-[768px] lg:min-w-[1024px] xl:min-w-[1200px] py-8">
-        <div className="w-full">
+      <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-[320px] sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1200px] py-8">
+        <div className="max-w-[1200px] mx-auto">
           {/* Hero Section */}
           <div className="bg-white border border-border/50 rounded-lg p-5 mb-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -150,8 +150,10 @@ export default function DashboardPage() {
 
           {/* Content Section */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-12 w-full">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="col-span-full flex items-center justify-center py-12 w-full">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
             </div>
           ) : sortedSessions.length === 0 ? (
             <div className="w-full flex flex-col items-center justify-center py-16 px-8 text-center bg-muted/30 rounded-lg border border-border/50">
