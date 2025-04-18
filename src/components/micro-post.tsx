@@ -16,7 +16,7 @@ export function MicroPost({ post }: MicroPostProps) {
 
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent className="px-4">
         <p className="whitespace-pre-wrap">{post.content}</p>
       </CardContent>
       <CardFooter className="px-4 py-2 text-xs text-muted-foreground border-t">Posted {formattedDate}</CardFooter>

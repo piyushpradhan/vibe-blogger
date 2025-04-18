@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { use } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,73 +9,227 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Send, Zap, MessageSquare, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MicroPost } from "@/components/micro-post";
+import { SortableMicroPost } from "@/components/sortable-micro-post";
 import { AIModelSelector } from "@/components/ai-model-selector";
 import { api } from "@/trpc/react";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay, defaultDropAnimation } from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { DraggablePostOverlay } from "@/components/draggable-post-overlay";
 
-// Mock data for a session
-const mockSession = {
-  id: "1",
-  title: "Web Development Best Practices",
-  posts: [
-    {
-      id: "p1",
-      content:
-        "Just realized how important proper error handling is in production apps. Users should never see a stack trace!",
-      createdAt: "2025-03-28T12:00:00Z",
-    },
-    {
-      id: "p2",
-      content:
-        "Thinking about the tradeoffs between client-side and server-side rendering. Each has its place depending on the use case.",
-      createdAt: "2025-03-28T12:15:00Z",
-    },
-    {
-      id: "p3",
-      content:
-        "Accessibility shouldn't be an afterthought. It should be baked into the development process from day one.",
-      createdAt: "2025-03-28T12:30:00Z",
-    },
-  ],
-};
-
-export default function SessionPage({ params }: { params: { id: string } }) {
-  const [session, setSession] = useState(mockSession);
+export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [newPost, setNewPost] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAIOptions, setShowAIOptions] = useState(false);
+  const [activePost, setActivePost] = useState<{ content: string } | null>(null);
+
+  const { data: session, isLoading } = api.session.getById.useQuery({ id });
+  const addPostMutation = api.session.addPost.useMutation({
+    onMutate: async (newPost) => {
+      // Cancel any outgoing refetches
+      await utils.session.getById.cancel({ id });
+      
+      // Snapshot the previous value
+      const previousSession = utils.session.getById.getData({ id });
+      
+      // Optimistically update to the new value
+      if (previousSession) {
+        utils.session.getById.setData({ id }, {
+          ...previousSession,
+          posts: [
+            ...previousSession.posts,
+            {
+              id: `temp-${Date.now()}`, // Temporary ID
+              content: newPost.content,
+              createdAt: new Date(),
+              sessionId: newPost.sessionId,
+              userId: previousSession.userId,
+              updatedAt: new Date()
+            }
+          ]
+        });
+      }
+      
+      // Return a context object with the snapshotted value
+      return { previousSession };
+    },
+    onError: (err, newPost, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousSession) {
+        utils.session.getById.setData({ id }, context.previousSession);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the correct data
+      void utils.session.getById.invalidate({ id });
+    },
+    onSuccess: () => {
+      setNewPost("");
+    },
+  });
+
+  const updatePostOrderMutation = api.session.updatePostOrder.useMutation({
+    onMutate: async (variables) => {
+      // Cancel any outgoing refetches
+      await utils.session.getById.cancel({ id });
+      
+      // Snapshot the previous value
+      const previousSession = utils.session.getById.getData({ id });
+      
+      // Return a context object with the snapshotted value
+      return { previousSession };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousSession) {
+        utils.session.getById.setData({ id }, context.previousSession);
+      }
+    },
+  });
+
+  const createBlogMutation = api.blog.create.useMutation({
+    onSuccess: (blog) => {
+      setIsGenerating(false);
+      // Redirect to the generated blog
+      window.location.href = `/dashboard/generated/${blog.id}`;
+    },
+  });
+
+  const utils = api.useUtils();
 
   const handleAddPost = () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() || !session) return;
 
-    const post = {
-      id: `p${Date.now()}`,
+    addPostMutation.mutate({
+      sessionId: session.id,
       content: newPost,
-      createdAt: new Date().toISOString(),
-    };
-
-    setSession({
-      ...session,
-      posts: [...session.posts, post],
     });
+  };
 
-    setNewPost("");
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault(); // Prevent default behavior
+      handleAddPost();
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const activePost = session?.posts.find(post => post.id === active.id);
+    if (activePost) {
+      setActivePost(activePost);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActivePost(null);
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id && session) {
+      const oldIndex = session.posts.findIndex(post => post.id === active.id);
+      const newIndex = session.posts.findIndex(post => post.id === over.id);
+      
+      // Create a new array with the reordered posts
+      const newPosts = [...session.posts];
+      const [movedPost] = newPosts.splice(oldIndex, 1);
+      
+      if (movedPost) {
+        newPosts.splice(newIndex, 0, movedPost);
+        
+        // Update the local state optimistically
+        utils.session.getById.setData({ id }, {
+          ...session,
+          posts: newPosts
+        });
+        
+        // Update the order on the server
+        updatePostOrderMutation.mutate({
+          sessionId: session.id,
+          postIds: newPosts.map(post => post.id)
+        });
+      }
+    }
+  };
+
+  // Configure sensors for drag detection
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement required before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Configure drop animation
+  const dropAnimation = {
+    ...defaultDropAnimation,
+    dragSourceOpacity: 0.5,
   };
 
   const handleGenerateBlog = () => {
+    if (!session) return;
     setIsGenerating(true);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      setIsGenerating(false);
-      // Here you would redirect to the generated blog
-      window.location.href = `/dashboard/generated/${session.id}`;
-    }, 2000);
+    // TODO: Replace this with actual AI processing
+    const mockBlogContent = `# ${session.title}
+
+## Introduction
+
+This is a generated blog post based on your session "${session.title}". The content will be generated using AI in the future.
+
+## Key Points
+
+${session.posts.map((post) => `- ${post.content}`).join("\n")}
+
+## Conclusion
+
+Thank you for using Vibe Blogger to generate your content.`;
+
+    createBlogMutation.mutate({
+      title: session.title,
+      content: mockBlogContent,
+      sessionId: session.id,
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1200px] py-8">
+          <div className="flex items-center justify-center h-[50vh]">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1200px] py-8">
+          <div className="flex flex-col items-center justify-center h-[50vh]">
+            <h1 className="text-2xl font-bold mb-4">Session not found</h1>
+            <Link href="/dashboard">
+              <Button>Back to Dashboard</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1400px] py-8">
+      <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1200px] py-8">
         <div className="mb-8">
           <Link
             href="/dashboard"
@@ -93,24 +248,34 @@ export default function SessionPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-8 lg:col-span-2">
-            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="space-y-8 lg:col-span-8">
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200 py-0">
               <CardContent className="p-6">
                 <Textarea
                   placeholder="What's on your mind? Add a new thought to this session..."
                   className="min-h-[120px] resize-none border-0 p-0 focus-visible:ring-0 text-lg"
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
                 <div className="mt-4 flex justify-end">
                   <Button 
                     onClick={handleAddPost} 
                     className="gap-1.5"
-                    disabled={!newPost.trim()}
+                    disabled={!newPost.trim() || addPostMutation.isPending}
                   >
-                    <Send className="h-4 w-4" />
-                    Post Thought
+                    {addPostMutation.isPending ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                        Posting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Post Thought
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -128,15 +293,38 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                   </p>
                 </div>
               ) : (
-                session.posts.map((post) => (
-                  <MicroPost key={post.id} post={post} />
-                ))
+                <div className="overflow-hidden">
+                  <DndContext 
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    autoScroll={false}
+                  >
+                    <SortableContext 
+                      items={session.posts.map(post => post.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="gap-3">
+                        {session.posts.slice().reverse().map((post: { id: string; content: string; createdAt: Date; sessionId: string; userId: string; updatedAt: Date }) => (
+                          <SortableMicroPost 
+                            key={post.id} 
+                            post={post}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                    <DragOverlay dropAnimation={dropAnimation}>
+                      {activePost ? <DraggablePostOverlay post={activePost} /> : null}
+                    </DragOverlay>
+                  </DndContext>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-6">
-            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+          <div className="lg:col-span-4 space-y-6">
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-200 py-0">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="h-5 w-5 text-primary" />

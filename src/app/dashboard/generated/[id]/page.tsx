@@ -6,73 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, Copy, Download, Edit } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
-
-// Mock data for a generated blog
-const mockBlog = {
-  id: "1",
-  title: "Web Development Best Practices: A Comprehensive Guide",
-  content: `# Web Development Best Practices: A Comprehensive Guide
-
-## Introduction
-
-In today's rapidly evolving digital landscape, web development best practices are essential for creating robust, accessible, and maintainable applications. This guide explores key considerations for modern web developers.
-
-## Error Handling in Production
-
-One of the most critical aspects of production applications is proper error handling. Users should never encounter raw stack traces or technical errors that expose implementation details. Instead:
-
-- Implement global error boundaries in frontend applications
-- Use try/catch blocks with appropriate fallbacks
-- Log errors on the server for debugging while showing user-friendly messages
-- Consider different error states in your UI design from the beginning
-
-## Client-Side vs. Server-Side Rendering
-
-The decision between client-side and server-side rendering involves important tradeoffs:
-
-### Client-Side Rendering
-- Better for highly interactive applications
-- Reduces server load
-- Enables rich client-side interactions
-- May impact initial load performance and SEO
-
-### Server-Side Rendering
-- Improves initial page load and SEO
-- Better for content-focused websites
-- Reduces client-side JavaScript requirements
-- May increase server resource usage
-
-The best approach often combines both techniques through hybrid rendering strategies.
-
-## Accessibility as a Priority
-
-Accessibility should never be an afterthought. Building accessible applications from day one:
-
-- Ensures compliance with legal requirements
-- Expands your potential user base
-- Often improves the experience for all users
-- Results in cleaner, more semantic code
-
-Key accessibility practices include proper semantic HTML, keyboard navigation support, sufficient color contrast, and thorough testing with screen readers.
-
-## Conclusion
-
-By prioritizing error handling, making informed rendering decisions, and embedding accessibility into your development process, you can create web applications that are robust, performant, and inclusive.`,
-  sessionId: "1",
-  createdAt: "2025-03-28T14:30:00Z",
-}
+import { api } from "@/trpc/react"
 
 export default function GeneratedBlogPage({ params }: { params: { id: string } }) {
-  const [blog, setBlog] = useState(mockBlog)
+  const { data: blog, isLoading } = api.blog.getById.useQuery({ id: params.id })
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
+    if (!blog) return
     navigator.clipboard.writeText(blog.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   const handleDownload = () => {
+    if (!blog) return
     const element = document.createElement("a")
     const file = new Blob([blog.content], { type: "text/markdown" })
     element.href = URL.createObjectURL(file)
@@ -80,6 +28,35 @@ export default function GeneratedBlogPage({ params }: { params: { id: string } }
     document.body.appendChild(element)
     element.click()
     document.body.removeChild(element)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!blog) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-6">
+          <div className="flex flex-col items-center justify-center h-64">
+            <h1 className="text-2xl font-bold mb-4">Blog not found</h1>
+            <Link href="/dashboard">
+              <Button>Back to Dashboard</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -118,7 +95,7 @@ export default function GeneratedBlogPage({ params }: { params: { id: string } }
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-              {blog.content.split("\n\n").map((paragraph, index) => {
+              {blog.content.split("\n\n").map((paragraph: string, index: number) => {
                 if (paragraph.startsWith("# ")) {
                   return (
                     <h1 key={index} className="text-3xl font-bold mt-6 mb-4">
@@ -140,7 +117,7 @@ export default function GeneratedBlogPage({ params }: { params: { id: string } }
                 } else if (paragraph.startsWith("- ")) {
                   return (
                     <ul key={index} className="list-disc pl-5 my-3">
-                      {paragraph.split("\n").map((item, i) => (
+                      {paragraph.split("\n").map((item: string, i: number) => (
                         <li key={i} className="my-1">
                           {item.substring(2)}
                         </li>

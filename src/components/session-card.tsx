@@ -20,11 +20,11 @@ export function SessionCard({ session }: SessionCardProps) {
 
   return (
     <Link href={`/dashboard/session/${session.id}`}>
-      <Card className="h-full overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm">
-        <CardHeader className="pb-2">
+      <Card className="h-full overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm gap-4">
+        <CardHeader>
           <CardTitle className="line-clamp-1">{session.title}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <p className="text-sm text-muted-foreground line-clamp-2">{session.preview}</p>
         </CardContent>
         <CardFooter className="flex justify-between text-xs text-muted-foreground">

@@ -97,5 +97,50 @@ export const sessionRouter = createTRPCRouter({
         },
       });
     }),
+
+  updatePostOrder: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+        postIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // First verify the session belongs to the user
+      const session = await ctx.db.session.findUnique({
+        where: {
+          id: input.sessionId,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!session) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Session not found",
+        });
+      }
+
+      // Verify all posts belong to this session
+      const posts = await ctx.db.post.findMany({
+        where: {
+          id: {
+            in: input.postIds,
+          },
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (posts.length !== input.postIds.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Some posts do not belong to this session",
+        });
+      }
+
+      // In a real implementation, you would update the order in the database
+      // For now, we'll just return success
+      return { success: true };
+    }),
 });
 

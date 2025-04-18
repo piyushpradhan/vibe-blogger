@@ -56,6 +56,7 @@ model Session {
     userId      String
     user        User     @relation(fields: [userId], references: [id])
     posts       Post[]
+    blogs       GeneratedBlog[]
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 
@@ -71,6 +72,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    blogs         GeneratedBlog[]
 }
 
 model VerificationToken {
@@ -79,4 +81,19 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model GeneratedBlog {
+    id        String   @id @default(cuid())
+    title     String
+    content   String
+    sessionId String
+    session   Session  @relation(fields: [sessionId], references: [id])
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([sessionId])
+    @@index([userId])
 }

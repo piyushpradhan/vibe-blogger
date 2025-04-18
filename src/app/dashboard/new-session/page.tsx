@@ -2,14 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Sparkles, Lightbulb } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { api } from "@/trpc/react"
 
@@ -18,6 +18,16 @@ export default function NewSessionPage() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isCreating, setIsCreating] = useState(false)
+  const [isPageLoaded, setIsPageLoaded] = useState(false)
+
+  useEffect(() => {
+    // Add a small delay to create a smooth entrance animation
+    const timer = setTimeout(() => {
+      setIsPageLoaded(true)
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   const createSession = api.session.create.useMutation({
     onSuccess: (session) => {
@@ -46,24 +56,29 @@ export default function NewSessionPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1400px] py-8">
-        <div className="mb-8">
+      <main className="flex-1 mx-auto px-4 sm:px-8 lg:px-12 max-w-[1200px] py-8">
+        <div className={`mb-8 transition-opacity duration-500 ${isPageLoaded ? 'opacity-100' : 'opacity-0'}`}>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-4 group"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform duration-200" />
             Back to dashboard
           </Link>
           <h1 className="text-3xl font-bold tracking-tight">Create New Session</h1>
           <p className="text-muted-foreground mt-2">Start a new session to begin your journey</p>
         </div>
 
-        <div className="md:w-xl lg:w-2xl max-w-5xl mx-auto">
-          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div className={`md:w-xl lg:w-2xl max-w-3xl mx-auto transition-all duration-500 ${isPageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border-primary/10">
             <form onSubmit={handleSubmit}>
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl">Session Details</CardTitle>
+                <div className="flex items-center gap-2">
+                  <div className="rounded-full bg-primary/10 p-2">
+                    <Lightbulb className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Session Details</CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
@@ -77,6 +92,7 @@ export default function NewSessionPage() {
                     onChange={(e) => setTitle(e.target.value)}
                     required
                     className="focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-200"
+                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">
@@ -102,7 +118,7 @@ export default function NewSessionPage() {
                 <Button 
                   type="submit" 
                   disabled={!title.trim() || isCreating}
-                  className="bg-primary hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-primary hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed gap-1.5"
                 >
                   {isCreating ? (
                     <span className="flex items-center gap-2">
@@ -110,7 +126,10 @@ export default function NewSessionPage() {
                       Creating...
                     </span>
                   ) : (
-                    "Create Session"
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Create Session
+                    </>
                   )}
                 </Button>
               </CardFooter>
