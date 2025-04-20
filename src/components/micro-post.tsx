@@ -13,7 +13,7 @@ interface MicroPostProps {
   sessionId: string
 }
 
-export function MicroPost({ post, onDelete, dragHandleProps, sessionId }: MicroPostProps) {
+export function MicroPost({ post, dragHandleProps, sessionId }: MicroPostProps) {
   const formattedDate = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const utils = api.useUtils()
   const deletePostMutation = api.post.delete.useMutation({

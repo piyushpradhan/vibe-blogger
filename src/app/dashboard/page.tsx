@@ -6,14 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Sparkles, Filter, ArrowRight, Calendar, MessageSquare, Zap } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
-import { EmptyState } from "@/components/empty-state"
 import { SessionCard } from "@/components/session-card"
 import { api } from "@/trpc/react"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,

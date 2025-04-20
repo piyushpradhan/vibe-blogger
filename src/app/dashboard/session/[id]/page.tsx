@@ -6,9 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Send, Zap, MessageSquare, Sparkles, Pencil } from "lucide-react";
+import { ArrowLeft, Send, Zap, MessageSquare, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { MicroPost } from "@/components/micro-post";
 import { SortableMicroPost } from "@/components/sortable-micro-post";
 import { AIModelSelector } from "@/components/ai-model-selector";
 import { api } from "@/trpc/react";
@@ -25,7 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  // Move all hooks to the top
   const [newPost, setNewPost] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAIOptions, setShowAIOptions] = useState(false);
@@ -35,7 +34,60 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const titleInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Configure sensors for drag detection
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement required before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Configure drop animation
+  const dropAnimation = {
+    ...defaultDropAnimation,
+    dragSourceOpacity: 0.5,
+  };
+
+  // Set up click outside handlers
+  useClickOutside(titleInputRef as React.RefObject<HTMLElement>, () => {
+    if (titleInputRef.current) {
+      titleInputRef.current.blur();
+    }
+  });
+
+  useClickOutside(descriptionInputRef as React.RefObject<HTMLElement>, () => {
+    if (descriptionInputRef.current) {
+      descriptionInputRef.current.blur();
+    }
+  });
+
+  // Get session ID
+  let id: string;
+  try {
+    id = use(params).id;
+  } catch (error) {
+    console.error('Failed to get session ID:', error);
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-6">
+          <div className="flex flex-col items-center justify-center h-64">
+            <h1 className="text-2xl font-bold mb-4">Invalid session ID</h1>
+            <Link href="/dashboard">
+              <Button>Back to Dashboard</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const { data: session, isLoading } = api.session.getById.useQuery({ id });
+  const utils = api.useUtils();
   const addPostMutation = api.session.addPost.useMutation({
     onMutate: async (newPost) => {
       // Cancel any outgoing refetches
@@ -81,7 +133,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   });
 
   const updatePostOrderMutation = api.session.updatePostOrder.useMutation({
-    onMutate: async (variables) => {
+    onMutate: async () => {
       // Cancel any outgoing refetches
       await utils.session.getById.cancel({ id });
       
@@ -113,7 +165,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     },
   });
 
-  const utils = api.useUtils();
   const updateSessionMutation = api.session.update.useMutation();
 
   const handleAddPost = () => {
@@ -171,24 +222,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     }
   };
 
-  // Configure sensors for drag detection
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px of movement required before drag starts
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  // Configure drop animation
-  const dropAnimation = {
-    ...defaultDropAnimation,
-    dragSourceOpacity: 0.5,
-  };
-
   const handleGenerateBlog = () => {
     if (!session) return;
     setIsGenerating(true);
@@ -203,18 +236,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     // Invalidate the session query to refresh the data
     void utils.session.getById.invalidate({ id });
   };
-
-  useClickOutside(titleInputRef as React.RefObject<HTMLElement>, () => {
-    if (titleInputRef.current) {
-      titleInputRef.current.blur();
-    }
-  });
-
-  useClickOutside(descriptionInputRef as React.RefObject<HTMLElement>, () => {
-    if (descriptionInputRef.current) {
-      descriptionInputRef.current.blur();
-    }
-  });
 
   if (isLoading) {
     return (

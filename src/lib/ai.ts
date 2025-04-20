@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize the Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 
 export async function generateBlogFromSession(
   title: string,
@@ -33,7 +33,7 @@ Format the response in markdown.`;
 
   try {
     const result = await modelInstance.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     console.log(response.text());
     return response.text();
   } catch (error) {

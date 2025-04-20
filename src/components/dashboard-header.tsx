@@ -44,7 +44,7 @@ export function DashboardHeader() {
                 {session?.user?.image ? (
                   <Image
                     src={session.user.image}
-                    alt={session.user.name || "User avatar"}
+                    alt={session.user.name ?? "User avatar"}
                     width={32}
                     height={32}
                     className="rounded-full"
@@ -57,7 +57,7 @@ export function DashboardHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
-                {session?.user?.name || "My Account"}
+                {session?.user?.name ?? "My Account"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
