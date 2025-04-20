@@ -1,8 +1,13 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, MessageSquare, Zap } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 export default function Home() {
+  const { status } = useSession()
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -50,7 +55,7 @@ export default function Home() {
               assistance.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/signup">
+              <Link href={status === "authenticated" ? "/dashboard" : "/login"}>
                 <Button size="lg" className="gap-1.5">
                   Get Started
                   <ArrowRight className="h-4 w-4" />
