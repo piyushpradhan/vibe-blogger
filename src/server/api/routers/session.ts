@@ -177,5 +177,30 @@ export const sessionRouter = createTRPCRouter({
       // For now, we'll just return success
       return { success: true };
     }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // First verify the session belongs to the user
+      const session = await ctx.db.session.findUnique({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!session) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Session not found",
+        });
+      }
+
+      return ctx.db.session.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
 });
 

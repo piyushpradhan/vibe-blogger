@@ -19,6 +19,7 @@ export default function NewSessionPage() {
   const [description, setDescription] = useState("")
   const [isCreating, setIsCreating] = useState(false)
   const [isPageLoaded, setIsPageLoaded] = useState(false)
+  const utils = api.useUtils();
 
   useEffect(() => {
     // Add a small delay to create a smooth entrance animation
@@ -31,6 +32,8 @@ export default function NewSessionPage() {
 
   const createSession = api.session.create.useMutation({
     onSuccess: (session) => {
+      // Invalidate the sessions list query to refresh the data
+      void utils.session.getAll.invalidate();
       router.push(`/dashboard/session/${session.id}`)
     },
     onError: (error) => {
