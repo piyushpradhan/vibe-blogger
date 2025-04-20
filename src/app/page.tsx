@@ -15,7 +15,7 @@ export default function Home() {
           <div className="mr-4 flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
               <MessageSquare className="h-6 w-6" />
-              <span className="font-bold">ThoughtStream</span>
+              <span className="font-bold">VibeBlogger</span>
             </Link>
             <nav className="flex items-center space-x-6 text-sm font-medium">
               <Link href="/features" className="transition-colors hover:text-foreground/80">
@@ -73,7 +73,7 @@ export default function Home() {
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-5xl">How it works</h2>
             <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              ThoughtStream makes it easy to capture ideas and transform them into polished content.
+              VibeBlogger makes it easy to capture ideas and transform them into polished content.
             </p>
           </div>
           <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
@@ -110,7 +110,7 @@ export default function Home() {
       <footer className="border-t py-6 md:py-0">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            © 2025 ThoughtStream. All rights reserved.
+            © 2025 VibeBlogger. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/terms" className="underline underline-offset-4">

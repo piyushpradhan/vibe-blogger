@@ -23,7 +23,7 @@ export function DashboardHeader() {
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            <span className="font-bold">ThoughtStream</span>
+            <span className="font-bold">VibeBlogger</span>
           </Link>
           <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
