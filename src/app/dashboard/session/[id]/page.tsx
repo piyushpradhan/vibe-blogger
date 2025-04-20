@@ -24,68 +24,8 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
-  // Move all hooks to the top
-  const [newPost, setNewPost] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showAIOptions, setShowAIOptions] = useState(false);
-  const [activePost, setActivePost] = useState<{ content: string } | null>(null);
-  const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const descriptionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const titleInputRef = useRef<HTMLInputElement>(null);
-  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Configure sensors for drag detection
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px of movement required before drag starts
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  // Configure drop animation
-  const dropAnimation = {
-    ...defaultDropAnimation,
-    dragSourceOpacity: 0.5,
-  };
-
-  // Set up click outside handlers
-  useClickOutside(titleInputRef as React.RefObject<HTMLElement>, () => {
-    if (titleInputRef.current) {
-      titleInputRef.current.blur();
-    }
-  });
-
-  useClickOutside(descriptionInputRef as React.RefObject<HTMLElement>, () => {
-    if (descriptionInputRef.current) {
-      descriptionInputRef.current.blur();
-    }
-  });
-
-  // Get session ID
-  let id: string;
-  try {
-    id = use(params).id;
-  } catch (error) {
-    console.error('Failed to get session ID:', error);
-    return (
-      <div className="flex min-h-screen flex-col">
-        <DashboardHeader />
-        <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-6">
-          <div className="flex flex-col items-center justify-center h-64">
-            <h1 className="text-2xl font-bold mb-4">Invalid session ID</h1>
-            <Link href="/dashboard">
-              <Button>Back to Dashboard</Button>
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
+  const { id } = use(params);
+  
   const { data: session, isLoading } = api.session.getById.useQuery({ id });
   const utils = api.useUtils();
   const addPostMutation = api.session.addPost.useMutation({
@@ -166,6 +106,46 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   });
 
   const updateSessionMutation = api.session.update.useMutation();
+
+  const [newPost, setNewPost] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAIOptions, setShowAIOptions] = useState(false);
+  const [activePost, setActivePost] = useState<{ content: string } | null>(null);
+  const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const descriptionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Configure sensors for drag detection
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement required before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Configure drop animation
+  const dropAnimation = {
+    ...defaultDropAnimation,
+    dragSourceOpacity: 0.5,
+  };
+
+  // Set up click outside handlers
+  useClickOutside(titleInputRef as React.RefObject<HTMLElement>, () => {
+    if (titleInputRef.current) {
+      titleInputRef.current.blur();
+    }
+  });
+
+  useClickOutside(descriptionInputRef as React.RefObject<HTMLElement>, () => {
+    if (descriptionInputRef.current) {
+      descriptionInputRef.current.blur();
+    }
+  });
 
   const handleAddPost = () => {
     if (!newPost.trim() || !session) return;

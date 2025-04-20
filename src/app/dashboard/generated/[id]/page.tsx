@@ -11,25 +11,7 @@ import { api } from "@/trpc/react"
 
 export default function GeneratedBlogPage({ params }: { params: Promise<{ id: string }> }) {
   const [copied, setCopied] = useState(false)
-  let id: string;
-  try {
-    id = use(params).id;
-  } catch (error) {
-    console.error('Failed to get blog ID:', error);
-    return (
-      <div className="flex min-h-screen flex-col">
-        <DashboardHeader />
-        <main className="flex-1 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-6">
-          <div className="flex flex-col items-center justify-center h-64">
-            <h1 className="text-2xl font-bold mb-4">Invalid blog ID</h1>
-            <Link href="/dashboard">
-              <Button>Back to Dashboard</Button>
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const { id } = use(params);
 
   const { data: blog, isLoading } = api.blog.getById.useQuery({ id })
 
