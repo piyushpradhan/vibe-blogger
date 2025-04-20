@@ -105,6 +105,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       // Redirect to the generated blog
       window.location.href = `/dashboard/generated/${blog.id}`;
     },
+    onError: (error) => {
+      setIsGenerating(false);
+      console.error("Error generating blog:", error);
+      // You might want to show a toast or alert here
+      alert(error.message || "Failed to generate blog");
+    },
   });
 
   const utils = api.useUtils();
@@ -187,25 +193,9 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     if (!session) return;
     setIsGenerating(true);
 
-    // TODO: Replace this with actual AI processing
-    const mockBlogContent = `# ${session.title}
-
-## Introduction
-
-This is a generated blog post based on your session "${session.title}". The content will be generated using AI in the future.
-
-## Key Points
-
-${session.posts.map((post) => `- ${post.content}`).join("\n")}
-
-## Conclusion
-
-Thank you for using Vibe Blogger to generate your content.`;
-
     createBlogMutation.mutate({
-      title: session.title,
-      content: mockBlogContent,
       sessionId: session.id,
+      model: "gemini"
     });
   };
 

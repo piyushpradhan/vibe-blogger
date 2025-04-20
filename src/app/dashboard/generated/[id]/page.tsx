@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,8 +9,9 @@ import { ArrowLeft, Copy, Download, Edit } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { api } from "@/trpc/react"
 
-export default function GeneratedBlogPage({ params }: { params: { id: string } }) {
-  const { data: blog, isLoading } = api.blog.getById.useQuery({ id: params.id })
+export default function GeneratedBlogPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const { data: blog, isLoading } = api.blog.getById.useQuery({ id })
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
