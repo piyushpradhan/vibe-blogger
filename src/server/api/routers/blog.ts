@@ -108,4 +108,48 @@ export const blogRouter = createTRPCRouter({
         });
       }
     }),
+
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.generatedBlog.findMany({
+        where: {
+          userId: ctx.session.user.id,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch blogs",
+      });
+    }
+  }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // First verify the blog belongs to the user
+      const blog = await ctx.db.generatedBlog.findUnique({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!blog) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Blog not found",
+        });
+      }
+
+      return ctx.db.generatedBlog.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
 }); 

@@ -29,8 +29,8 @@ export function DashboardHeader() {
             <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
               Sessions
             </Link>
-            <Link href="/dashboard/published" className="transition-colors hover:text-foreground/80">
-              Published
+            <Link href="/dashboard/generated" className="transition-colors hover:text-foreground/80">
+              Generated Blogs
             </Link>
             <Link href="/dashboard/settings" className="transition-colors hover:text-foreground/80">
               Settings
