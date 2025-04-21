@@ -9,12 +9,24 @@ import { Zap } from "lucide-react";
 
 interface AIModelSelectorProps {
   onClose: () => void;
+  currentModel: "gemini" | "gpt" | "claude";
+  onModelChange?: (model: "gemini" | "gpt" | "claude") => void;
 }
 
-export function AIModelSelector({ onClose }: AIModelSelectorProps) {
-  const [selectedModel, setSelectedModel] = useState("gemini");
+export function AIModelSelector({
+  onClose,
+  currentModel,
+  onModelChange,
+}: AIModelSelectorProps) {
+  const [selectedModel, setSelectedModel] = useState(currentModel);
   const [apiKey, setApiKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleModelChange = (value: string) => {
+    const newModel = value as "gemini" | "gpt" | "claude";
+    setSelectedModel(newModel);
+    onModelChange?.(newModel);
+  };
 
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -33,7 +45,7 @@ export function AIModelSelector({ onClose }: AIModelSelectorProps) {
     <div className="space-y-4">
       <RadioGroup
         value={selectedModel}
-        onValueChange={setSelectedModel}
+        onValueChange={handleModelChange}
         className="space-y-2"
       >
         <div className="flex items-center space-x-2">

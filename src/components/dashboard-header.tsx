@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,31 +9,45 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MessageSquare, Settings, LogOut, User } from "lucide-react"
-import { useSession } from "next-auth/react"
-import Image from "next/image"
+} from "@/components/ui/dropdown-menu";
+import {
+  MessageSquare,
+  Settings,
+  LogOut,
+  User,
+  HelpCircle,
+  BarChart,
+} from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export function DashboardHeader() {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/login" });
+  };
 
   return (
-    <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex h-14 items-center justify-between">
+    <header className="border-border/40 bg-background/95 supports-[backdrop-filter]:bg-background/60 border-b backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             <span className="font-bold">VibeBlogger</span>
           </Link>
-          <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
-            <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
+          <nav className="hidden items-center space-x-4 text-sm font-medium md:flex">
+            <Link
+              href="/dashboard"
+              className="hover:text-foreground/80 transition-colors"
+            >
               Sessions
             </Link>
-            <Link href="/dashboard/generated" className="transition-colors hover:text-foreground/80">
+            <Link
+              href="/dashboard/generated"
+              className="hover:text-foreground/80 transition-colors"
+            >
               Generated Blogs
-            </Link>
-            <Link href="/dashboard/settings" className="transition-colors hover:text-foreground/80">
-              Settings
             </Link>
           </nav>
         </div>
@@ -55,33 +69,68 @@ export function DashboardHeader() {
                 <span className="sr-only">User menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                {session?.user?.name ?? "My Account"}
-              </DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="flex items-center gap-2 p-2">
+                <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
+                  {session?.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name ?? "User avatar"}
+                      width={40}
+                      height={40}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm leading-none font-medium">
+                    {session?.user?.name ?? "My Account"}
+                  </p>
+                  <p className="text-muted-foreground text-xs leading-none">
+                    {session?.user?.email}
+                  </p>
+                </div>
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile" className="cursor-pointer flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="cursor-pointer flex items-center gap-2">
+                <Link
+                  href="/dashboard/settings"
+                  className="flex items-center gap-2"
+                >
                   <Settings className="h-4 w-4" />
-                  Settings
+                  <span>Account Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/dashboard/statistics"
+                  className="flex items-center gap-2"
+                >
+                  <BarChart className="h-4 w-4" />
+                  <span>Statistics</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer flex items-center gap-2 text-red-500">
+              <DropdownMenuItem asChild>
+                <Link href="/help" className="flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  <span>Help & Support</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500"
+              >
                 <LogOut className="h-4 w-4" />
-                Log out
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
     </header>
-  )
+  );
 }
-

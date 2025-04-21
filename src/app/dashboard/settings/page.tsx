@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import {
   Card,
@@ -20,9 +20,7 @@ import { api } from "@/trpc/react";
 export default function SettingsPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+  const [formData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -31,33 +29,11 @@ export default function SettingsPage() {
   });
 
   const { data: user } = api.user.getCurrent.useQuery();
-  const updateUser = api.user.update.useMutation();
   const updatePassword = api.user.updatePassword.useMutation();
-
-  // Set initial form data when user data is loaded
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name ?? "",
-        email: user.email ?? "",
-      }));
-    }
-  }, [user]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
-  };
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Update profile
-      if (formData.name !== user?.name) {
-        await updateUser.mutateAsync({ name: formData.name });
-      }
-
       // Update password if provided
       if (formData.newPassword && formData.currentPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
@@ -103,25 +79,19 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>
-              <CardDescription>
-                Update your profile information.
-              </CardDescription>
+              <CardDescription>Your profile information.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                />
+                <Input id="name" value={user?.name ?? ""} disabled />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
+                  value={user?.email ?? ""}
                   disabled
                 />
               </div>

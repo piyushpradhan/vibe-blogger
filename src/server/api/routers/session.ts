@@ -8,7 +8,7 @@ export const sessionRouter = createTRPCRouter({
       z.object({
         title: z.string().min(1),
         description: z.string(),
-        model: z.enum(["gemini", "gpt", "claude"]),
+        model: z.enum(["gemini", "gpt", "claude"]).default("gemini"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -35,6 +35,7 @@ export const sessionRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().optional(),
         description: z.string().optional(),
+        model: z.enum(["gemini", "gpt", "claude"]).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -60,6 +61,7 @@ export const sessionRouter = createTRPCRouter({
         data: {
           title: input.title,
           description: input.description,
+          model: input.model,
         },
       });
     }),
