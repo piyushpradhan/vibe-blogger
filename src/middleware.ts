@@ -15,10 +15,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
+  // If the user is not authenticated and trying to access a protected route,
+  // redirect them to the login page
+  if (!isAuthenticated && request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", request.url))
+  }
+
   return NextResponse.next()
 }
 
 // Specify which paths the middleware should run on
 export const config = {
-  matcher: ["/"],
+  matcher: ["/", "/dashboard/:path*"],
 } 
