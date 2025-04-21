@@ -50,10 +50,6 @@ export default function SettingsPage() {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSwitchChange = (id: string) => {
-    setFormData((prev) => ({ ...prev, [id]: !prev[id as keyof typeof prev] }));
-  };
-
   const handleSave = async () => {
     setIsLoading(true);
     try {

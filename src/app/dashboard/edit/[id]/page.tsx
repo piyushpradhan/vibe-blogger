@@ -115,7 +115,7 @@ export default function EditBlogPage({
                 size="sm"
                 className="gap-1"
                 onClick={handleSave}
-                disabled={updateBlog.isLoading}
+                disabled={updateBlog.isPending}
               >
                 <Save className="h-4 w-4" />
                 Save
