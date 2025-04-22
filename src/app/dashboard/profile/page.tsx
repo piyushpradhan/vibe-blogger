@@ -97,14 +97,6 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">Email</p>
                 <p className="text-muted-foreground">{user?.email}</p>
               </div>
-              <div className="grid gap-2">
-                <p className="text-sm font-medium">Member Since</p>
-                <p className="text-muted-foreground">
-                  {user?.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
