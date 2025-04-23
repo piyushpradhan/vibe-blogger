@@ -7,36 +7,66 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Zap } from "lucide-react";
 
+type AIModel = "gemini" | "gpt" | "claude";
+
 interface AIModelSelectorProps {
   onClose: () => void;
-  currentModel: "gemini" | "gpt" | "claude";
-  onModelChange?: (model: "gemini" | "gpt" | "claude") => void;
+  currentModel: AIModel;
+  onModelChange?: (model: AIModel) => void;
 }
+
+const MODEL_OPTIONS: { value: AIModel; label: string }[] = [
+  { value: "gemini", label: "Gemini (Default)" },
+  { value: "gpt", label: "ChatGPT" },
+  { value: "claude", label: "Claude" },
+];
+
+const MODEL_PROVIDERS: Record<AIModel, string> = {
+  gemini: "Google",
+  gpt: "OpenAI",
+  claude: "Anthropic",
+};
 
 export function AIModelSelector({
   onClose,
   currentModel,
   onModelChange,
 }: AIModelSelectorProps) {
-  const [selectedModel, setSelectedModel] = useState(currentModel);
+  const [selectedModel, setSelectedModel] = useState<AIModel>(currentModel);
   const [apiKey, setApiKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleModelChange = (value: string) => {
-    const newModel = value as "gemini" | "gpt" | "claude";
+    const newModel = value as AIModel;
     setSelectedModel(newModel);
     onModelChange?.(newModel);
+    setError(null);
   };
 
-  const handleGenerate = () => {
-    setIsGenerating(true);
+  const validateApiKey = (key: string): boolean => {
+    // Basic validation - you might want to add more specific validation
+    return key.length > 0;
+  };
 
-    // Simulate AI processing
-    setTimeout(() => {
-      setIsGenerating(false);
+  const handleGenerate = async () => {
+    if (needsApiKey && !validateApiKey(apiKey)) {
+      setError("Please enter a valid API key");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      // Simulate AI processing
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       // Here you would redirect to the generated blog
       window.location.href = `/dashboard/generated/1`;
-    }, 2000);
+    } catch (err) {
+      setError("Failed to generate blog. Please try again.");
+      setIsGenerating(false);
+    }
   };
 
   const needsApiKey = selectedModel !== "gemini";
@@ -48,18 +78,12 @@ export function AIModelSelector({
         onValueChange={handleModelChange}
         className="space-y-2"
       >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="gemini" id="gemini" />
-          <Label htmlFor="gemini">Gemini (Default)</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="gpt" id="gpt" />
-          <Label htmlFor="gpt">ChatGPT</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="claude" id="claude" />
-          <Label htmlFor="claude">Claude</Label>
-        </div>
+        {MODEL_OPTIONS.map((option) => (
+          <div key={option.value} className="flex items-center space-x-2">
+            <RadioGroupItem value={option.value} id={option.value} />
+            <Label htmlFor={option.value}>{option.label}</Label>
+          </div>
+        ))}
       </RadioGroup>
 
       {needsApiKey && (
@@ -68,16 +92,20 @@ export function AIModelSelector({
           <Input
             id="api-key"
             type="password"
-            placeholder={`Enter your ${selectedModel === "gpt" ? "OpenAI" : "Anthropic"} API key`}
+            placeholder={`Enter your ${MODEL_PROVIDERS[selectedModel]} API key`}
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => {
+              setApiKey(e.target.value);
+              setError(null);
+            }}
             className="w-full"
+            aria-invalid={!!error}
           />
           <p className="text-muted-foreground text-xs">
-            Your API key is required to use{" "}
-            {selectedModel === "gpt" ? "ChatGPT" : "Claude"} and will not be
-            stored on our servers.
+            Your API key is required to use {MODEL_PROVIDERS[selectedModel]} and
+            will not be stored on our servers.
           </p>
+          {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
       )}
 
@@ -86,11 +114,12 @@ export function AIModelSelector({
           onClick={handleGenerate}
           className="flex-1 gap-1"
           disabled={(needsApiKey && !apiKey) || isGenerating}
+          aria-busy={isGenerating}
         >
           <Zap className="h-4 w-4" />
           {isGenerating ? "Generating..." : "Generate Blog"}
         </Button>
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} disabled={isGenerating}>
           Cancel
         </Button>
       </div>

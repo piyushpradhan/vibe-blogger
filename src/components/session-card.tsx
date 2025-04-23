@@ -1,9 +1,15 @@
-import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { api } from "@/trpc/react"
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MessageSquare, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/trpc/react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,39 +19,83 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { useState } from "react"
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface Session {
-  id: string
-  title: string
-  postCount: number
-  updatedAt: string
-  preview: string
+  id: string;
+  title: string;
+  postCount: number;
+  updatedAt: string;
+  preview: string;
 }
 
 interface SessionCardProps {
-  session: Session
+  session: Session;
+}
+
+interface DeleteConfirmationDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  isLoading?: boolean;
+}
+
+function DeleteConfirmationDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading = false,
+}: DeleteConfirmationDialogProps) {
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Session</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this session? This action cannot be
+            undone and will also delete all posts and generated blogs associated
+            with it.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isLoading ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 export function SessionCard({ session }: SessionCardProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const utils = api.useUtils()
-  const formattedDate = formatDistanceToNow(new Date(session.updatedAt), { addSuffix: true })
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const utils = api.useUtils();
+  const formattedDate = formatDistanceToNow(new Date(session.updatedAt), {
+    addSuffix: true,
+  });
 
   const deleteSessionMutation = api.session.delete.useMutation({
     onMutate: async (variables) => {
       // Cancel any outgoing refetches
       await utils.session.getAll.cancel();
-      
+
       // Snapshot the previous value
       const previousSessions = utils.session.getAll.getData();
-      
+
       // Optimistically update to the new value
       if (previousSessions) {
-        utils.session.getAll.setData(undefined, previousSessions.filter(s => s.id !== variables.id));
+        utils.session.getAll.setData(
+          undefined,
+          previousSessions.filter((s) => s.id !== variables.id),
+        );
       }
-      
+
       // Return a context object with the snapshotted value
       return { previousSessions };
     },
@@ -62,28 +112,37 @@ export function SessionCard({ session }: SessionCardProps) {
   });
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setShowDeleteDialog(true)
-  }
+    e.preventDefault();
+    setShowDeleteDialog(true);
+  };
 
   const confirmDelete = () => {
-    deleteSessionMutation.mutate({ id: session.id })
-    setShowDeleteDialog(false)
-  }
+    deleteSessionMutation.mutate({ id: session.id });
+    setShowDeleteDialog(false);
+  };
 
   return (
-    <div className="relative group">
-      <Link href={`/dashboard/session/${session.id}`}>
-        <Card className="h-full overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm flex flex-col">
+    <div className="group relative">
+      <Link
+        href={`/dashboard/session/${session.id}`}
+        className="block"
+        aria-label={`View session: ${session.title}`}
+      >
+        <Card className="hover:border-primary/50 flex h-full flex-col overflow-hidden transition-all hover:shadow-sm">
           <CardHeader>
             <CardTitle className="line-clamp-1">{session.title}</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex-1">
-            <p className="text-sm text-muted-foreground line-clamp-2">{session.preview}</p>
+          <CardContent className="flex-1 pt-0">
+            <p className="text-muted-foreground line-clamp-2 text-sm">
+              {session.preview}
+            </p>
           </CardContent>
-          <CardFooter className="flex justify-between text-xs text-muted-foreground whitespace-nowrap mt-auto">
+          <CardFooter className="text-muted-foreground mt-auto flex justify-between text-xs whitespace-nowrap">
             <div className="flex items-center gap-1">
-              <MessageSquare className="h-3.5 w-3.5 flex-shrink-0" />
+              <MessageSquare
+                className="h-3.5 w-3.5 flex-shrink-0"
+                aria-hidden="true"
+              />
               <span>{session.postCount} posts</span>
             </div>
             <div className="ml-2">Updated {formattedDate}</div>
@@ -93,29 +152,19 @@ export function SessionCard({ session }: SessionCardProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        className="absolute top-2 right-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         onClick={handleDelete}
+        aria-label="Delete session"
       >
-        <Trash2 className="h-4 w-4 text-destructive" />
+        <Trash2 className="text-destructive h-4 w-4" aria-hidden="true" />
       </Button>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this session? This action cannot be undone and will also delete all posts and generated blogs associated with it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        isLoading={deleteSessionMutation.isPending}
+      />
     </div>
-  )
+  );
 }
-
