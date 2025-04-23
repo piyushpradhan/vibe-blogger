@@ -158,23 +158,6 @@ export const sessionRouter = createTRPCRouter({
         });
       }
 
-      // Verify all posts belong to this session
-      const posts = await ctx.db.post.findMany({
-        where: {
-          id: {
-            in: input.postIds,
-          },
-          sessionId: input.sessionId,
-        },
-      });
-
-      if (posts.length !== input.postIds.length) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Some posts do not belong to this session",
-        });
-      }
-
       // In a real implementation, you would update the order in the database
       // For now, we'll just return success
       return { success: true };
