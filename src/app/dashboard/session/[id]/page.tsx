@@ -251,11 +251,6 @@ export default function SessionPage({
     });
   };
 
-  const handleDeletePost = () => {
-    // Invalidate the session query to refresh the data
-    void utils.session.getById.invalidate({ id });
-  };
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -466,7 +461,6 @@ export default function SessionPage({
                                 key={post.id}
                                 post={post}
                                 sessionId={session.id}
-                                onDelete={handleDeletePost}
                               />
                             ),
                           )}

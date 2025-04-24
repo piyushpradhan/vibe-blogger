@@ -9,17 +9,6 @@ interface SortableMicroPostProps {
   sessionId: string;
 }
 
-interface DragHandleProps {
-  "aria-label": string;
-  "data-rbd-drag-handle-draggable-id": string;
-  "data-rbd-drag-handle-context-id": string;
-  draggable: boolean;
-  role: string;
-  tabIndex: number;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  "aria-pressed"?: boolean;
-}
-
 export function SortableMicroPost({ post, sessionId }: SortableMicroPostProps) {
   const {
     attributes,
@@ -69,9 +58,11 @@ export function SortableMicroPost({ post, sessionId }: SortableMicroPostProps) {
           ...listeners,
           role: "button",
           "aria-label": "Drag to reorder",
-          "aria-pressed": isDragging,
           tabIndex: 0,
           onKeyDown: handleKeyDown,
+          "data-rbd-drag-handle-draggable-id": post.id,
+          "data-rbd-drag-handle-context-id": "0",
+          draggable: true,
         }}
       />
     </div>
