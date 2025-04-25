@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/trpc/react";
-import { MessageSquare, BookOpen, Brain } from "lucide-react";
+import { MessageSquare, BookOpen, Brain, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function StatCardSkeleton() {
@@ -50,12 +50,18 @@ export default function StatisticsPage() {
     sessions?.reduce((acc, session) => acc + (session.posts?.length ?? 0), 0) ??
     0;
 
+  const averageSessionDuration =
+    sessions?.reduce((acc, session) => {
+      const duration = session.posts?.length ?? 0;
+      return acc + duration;
+    }, 0) ?? 0 / (totalSessions || 1);
+
   const isLoading = isLoadingSessions || isLoadingBlogs;
 
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Statistics</h1>
           <p className="text-muted-foreground">
@@ -65,9 +71,10 @@ export default function StatisticsPage() {
 
         <div className="grid gap-6">
           {/* Overview Cards */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             {isLoading ? (
               <>
+                <StatCardSkeleton />
                 <StatCardSkeleton />
                 <StatCardSkeleton />
                 <StatCardSkeleton />
@@ -115,6 +122,23 @@ export default function StatisticsPage() {
                     <div className="text-2xl font-bold">{totalPosts}</div>
                     <p className="text-muted-foreground text-xs">
                       Individual AI interactions
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Avg. Session Length
+                    </CardTitle>
+                    <Clock className="text-muted-foreground h-4 w-4" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {Math.round(averageSessionDuration)}
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      Thoughts per session
                     </p>
                   </CardContent>
                 </Card>
