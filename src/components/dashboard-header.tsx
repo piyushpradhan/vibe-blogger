@@ -6,18 +6,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MessageSquare,
-  Settings,
-  LogOut,
-  User,
-  HelpCircle,
-  BarChart,
-} from "lucide-react";
+import { MessageSquare, Settings, LogOut, User, BarChart } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import type { Session } from "next-auth";
@@ -88,13 +80,6 @@ function UserMenu({ session, onSignOut }: UserMenuProps) {
           >
             <BarChart className="h-4 w-4" />
             <span>Statistics</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/help" className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
-            <span>Help & Support</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
