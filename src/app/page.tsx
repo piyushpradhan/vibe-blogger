@@ -29,12 +29,6 @@ export default function Home() {
                 Features
               </Link>
               <Link
-                href="/pricing"
-                className="hover:text-foreground/80 transition-colors"
-              >
-                Pricing
-              </Link>
-              <Link
                 href="/docs"
                 className="hover:text-foreground/80 transition-colors"
               >
