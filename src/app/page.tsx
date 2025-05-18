@@ -42,7 +42,7 @@ export default function Home() {
                 Log in
               </Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/login">
               <Button className="text-sm">
                 Sign up
                 <ArrowRight className="ml-1 h-4 w-4" />
