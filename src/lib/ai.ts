@@ -35,6 +35,7 @@ Please generate a blog post that:
 3. Includes relevant headings and subheadings
 4. Maintains a professional yet engaging tone
 5. Concludes with a strong ending
+6. The length of the blog is proportional to the number and length of the microblogs the user is providing
 
 Format the response in markdown.`;
 
