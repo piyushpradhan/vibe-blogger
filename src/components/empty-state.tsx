@@ -1,45 +1,44 @@
-import type { ReactNode } from "react";
-import { MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: ReactNode;
+  icon: LucideIcon;
   title: string;
   description: string;
-  action?: ReactNode;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
   className?: string;
-  isLoading?: boolean;
 }
 
 export function EmptyState({
-  icon = (
-    <MessageSquare
-      className="text-muted-foreground/50 h-12 w-12"
-      aria-hidden="true"
-    />
-  ),
+  icon: Icon,
   title,
   description,
   action,
   className,
-  isLoading = false,
 }: EmptyStateProps) {
   return (
-    <div
-      className={cn(
-        "flex h-[450px] shrink-0 items-center justify-center rounded-md border border-dashed",
-        className,
-      )}
-      role="status"
-      aria-live="polite"
-      aria-busy={isLoading}
-    >
-      <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-        {icon}
-        <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-        <p className="text-muted-foreground mt-2 text-sm">{description}</p>
-        {action && <div className="mt-6">{action}</div>}
+    <div className={cn(
+      "flex flex-col items-center justify-center space-y-4 p-8 text-center",
+      className
+    )}>
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+        <Icon className="h-8 w-8 text-muted-foreground" />
       </div>
+      
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <p className="text-muted-foreground max-w-sm">{description}</p>
+      </div>
+      
+      {action && (
+        <Button onClick={action.onClick}>
+          {action.label}
+        </Button>
+      )}
     </div>
   );
 }
