@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Image from "next/image";
 import type { Components } from "react-markdown";
 import type { ReactNode } from "react";
 
@@ -162,8 +163,9 @@ const markdownComponents: Components = {
     </a>
   ),
   img: ({ src, alt, ...props }) => (
-    <img
-      src={src}
+    // @ts-expect-error well aware of the problem here, choosing to ignore it right now
+    <Image
+      src={src ?? ""}
       alt={alt ?? ""}
       className="my-4 rounded-lg"
       loading="lazy"

@@ -8,10 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Copy, Download, Edit } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { api } from "@/trpc/react";
-import hljs from "highlight.js";
 import "highlight.js/styles/vs2015.css";
 import { MarkdownPreview } from "@/components/markdown-preview";
-import type { ReactNode } from "react";
 
 export default function GeneratedBlogPage({
   params,

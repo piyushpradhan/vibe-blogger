@@ -29,7 +29,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
-    
+
     // Log to external service in production
     if (process.env.NODE_ENV === "production") {
       // You can integrate with services like Sentry, LogRocket, etc.
@@ -59,23 +59,23 @@ export class ErrorBoundary extends React.Component<
   }
 }
 
-function DefaultErrorFallback({ 
-  error, 
-  resetError 
-}: { 
-  error?: Error; 
-  resetError: () => void; 
+function DefaultErrorFallback({
+  error,
+  resetError
+}: {
+  error?: Error;
+  resetError: () => void;
 }) {
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 p-8">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
         <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
       </div>
-      
+
       <div className="space-y-2 text-center">
         <h2 className="text-xl font-semibold">Something went wrong</h2>
         <p className="text-muted-foreground max-w-md">
-          We encountered an unexpected error. Don't worry, your data is safe.
+          We encountered an unexpected error. Don&apos;t worry, your data is safe.
         </p>
         {process.env.NODE_ENV === "development" && error && (
           <details className="mt-4 text-left">
@@ -89,7 +89,7 @@ function DefaultErrorFallback({
           </details>
         )}
       </div>
-      
+
       <div className="flex space-x-2">
         <Button onClick={resetError} variant="outline">
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -107,7 +107,7 @@ function DefaultErrorFallback({
 export function useErrorHandler() {
   return (error: Error, errorInfo?: { componentStack?: string }) => {
     console.error("Error caught by useErrorHandler:", error, errorInfo);
-    
+
     // Log to external service in production
     if (process.env.NODE_ENV === "production") {
       console.error("Production error:", {

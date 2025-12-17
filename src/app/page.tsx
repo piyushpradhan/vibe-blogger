@@ -177,7 +177,7 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
-        
+
         {/* Features Section */}
         <section className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 md:py-12 lg:px-8 lg:py-24">
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
@@ -262,7 +262,7 @@ export default function Home() {
               className="bg-background/50 hover:border-primary/50 relative overflow-hidden rounded-lg border p-6 backdrop-blur-sm transition-colors"
             >
               <p className="text-muted-foreground mb-4 text-sm italic">
-                "VibeBlogger has revolutionized how I capture and develop my ideas. The AI assistance is incredible!"
+                &quot;VibeBlogger has revolutionized how I capture and develop my ideas. The AI assistance is incredible!&quot;
               </p>
               <div className="flex items-center space-x-3">
                 <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
@@ -282,7 +282,7 @@ export default function Home() {
               className="bg-background/50 hover:border-primary/50 relative overflow-hidden rounded-lg border p-6 backdrop-blur-sm transition-colors"
             >
               <p className="text-muted-foreground mb-4 text-sm italic">
-                "Finally, a tool that understands how my brain works. I can capture thoughts instantly and turn them into full articles."
+                &quot;Finally, a tool that understands how my brain works. I can capture thoughts instantly and turn them into full articles.&quot;
               </p>
               <div className="flex items-center space-x-3">
                 <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
@@ -302,7 +302,7 @@ export default function Home() {
               className="bg-background/50 hover:border-primary/50 relative overflow-hidden rounded-lg border p-6 backdrop-blur-sm transition-colors"
             >
               <p className="text-muted-foreground mb-4 text-sm italic">
-                "The session organization feature is a game-changer. I can manage multiple writing projects effortlessly."
+                &quot;The session organization feature is a game-changer. I can manage multiple writing projects effortlessly.&quot;
               </p>
               <div className="flex items-center space-x-3">
                 <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">

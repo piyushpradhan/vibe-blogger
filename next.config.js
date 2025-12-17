@@ -14,7 +14,6 @@ const config = {
   poweredByHeader: false,
   generateEtags: false,
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
   compiler: {

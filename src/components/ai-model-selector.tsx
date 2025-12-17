@@ -66,6 +66,7 @@ export function AIModelSelector({
     } catch (err) {
       setError("Failed to generate blog. Please try again.");
       setIsGenerating(false);
+      console.error(err);
     }
   };
 

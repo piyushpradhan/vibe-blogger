@@ -41,7 +41,7 @@ export const userRouter = createTRPCRouter({
         email: z.string().email().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async () => {
       // TODO: Implement user update logic
       return { success: true }
     }),
@@ -53,7 +53,7 @@ export const userRouter = createTRPCRouter({
         newPassword: z.string().min(8),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async () => {
       // TODO: Implement password update logic
       return { success: true }
     }),
